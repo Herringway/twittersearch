@@ -8,7 +8,7 @@ import settings
 # Twitter API. Build your URL, then call this function to get the URL that you will 
 # send to Twitter. 
 def sign_oauth_request(url):
-  # Set up consumer and token objects. ***Replace these with your credentials***
+  # Set up consumer and token objects.
   consumer = oauth2.Consumer(key=settings.CONSUMERKEY, 
     secret=settings.CONSUMERSECRET) 
   token = oauth2.Token(key=settings.ACCESSTOKEN, 
