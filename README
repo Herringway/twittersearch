@@ -1,0 +1,8 @@
+Simple twitter search client by Cameron Ross.
+
+Be sure to edit settings.py before running.
+
+Usage: python twittersearch.py query [count]
+  Where query is the string you wish to search for and count is the number of tweets desired.
+
+Tested on linux.
