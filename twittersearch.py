@@ -11,13 +11,11 @@ def fetch_and_decode(url):
   try:
     request = urllib2.urlopen(signedurl)
   except urllib2.URLError:
-    print('Could not contact twitter.')
-    return []
+    raise Exception('Could not contact twitter.')
   try:
     decoded_response = json.loads(request.read())
   except ValueError:
-    print('Bad data received. Check your tokens.')
-    return []
+    raise Exception('Bad data received. Check your tokens.')
   return decoded_response
 
 def search_tweets(query,count=10):
@@ -26,8 +24,10 @@ def search_tweets(query,count=10):
   search_object = fetch_and_decode(url)
   output = search_object['statuses']
   for i in range(0,(count-1)/100):
+    if len(search_object['statuses']) < 100:
+      return output
     url = search_object['search_metadata']['next_results']
-    if i == ((count-1)/100)-1:
+    if count%100 > 0 and i == ((count-1)/100)-1:
       decoded = urlparse.parse_qs(url)
       decoded['count'] = [str(count%100)]
       url = '?' + urllib.urlencode(decoded, 1)
@@ -46,6 +46,9 @@ if __name__ == "__main__":
   if len(sys.argv) > 1:
     if len(sys.argv) > 2:
       count = int(sys.argv[2])
-    pretty_print_tweets(search_tweets(sys.argv[1],count))
+    try:
+      pretty_print_tweets(search_tweets(sys.argv[1],count))
+    except Exception as detail:
+      print('Failed printing tweets:' + detail)
   else:
     print('No query specified')
