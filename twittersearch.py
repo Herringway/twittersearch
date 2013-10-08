@@ -10,8 +10,8 @@ def fetch_and_decode(url):
   signedurl = oauthsign.sign_oauth_request(url).to_url()
   try:
     request = urllib2.urlopen(signedurl)
-  except urllib2.URLError:
-    raise Exception('Could not contact twitter.')
+  except urllib2.URLError as detail:
+    raise Exception('Could not contact twitter (%s)' % detail)
   try:
     decoded_response = json.loads(request.read())
   except ValueError:
@@ -49,6 +49,6 @@ if __name__ == "__main__":
     try:
       pretty_print_tweets(search_tweets(sys.argv[1],count))
     except Exception as detail:
-      print('Failed printing tweets:' + detail)
+      print('Failed to print tweets: %s' % detail)
   else:
     print('No query specified')
