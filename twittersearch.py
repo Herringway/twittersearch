@@ -6,8 +6,7 @@ import urllib2
 import urlparse
 import json
 
-def search_tweets(query,count=10):
-  url = 'https://api.twitter.com/1.1/search/tweets.json?%s' % urllib.urlencode({'q':query, 'lang':'en', 'count':min(count,100)})
+def fetch_and_decode(url):
   signedurl = oauthsign.sign_oauth_request(url).to_url()
   try:
     request = urllib2.urlopen(signedurl)
@@ -19,26 +18,21 @@ def search_tweets(query,count=10):
   except ValueError:
     print('Bad data received. Check your tokens.')
     return []
-  output = decoded_response['statuses']
+  return decoded_response
+
+def search_tweets(query,count=10):
+  baseurl = 'https://api.twitter.com/1.1/search/tweets.json'
+  url = baseurl + '?%s' % urllib.urlencode({'q':query, 'lang':'en', 'count':min(count,100)})
+  search_object = fetch_and_decode(url)
+  output = search_object['statuses']
   for i in range(0,(count-1)/100):
-    url = decoded_response['search_metadata']['next_results']
-    if (i == ((count-1)/100)-1):
+    url = search_object['search_metadata']['next_results']
+    if i == ((count-1)/100)-1:
       decoded = urlparse.parse_qs(url)
       decoded['count'] = [str(count%100)]
       url = '?' + urllib.urlencode(decoded, 1)
-    url = 'https://api.twitter.com/1.1/search/tweets.json' + url
-    signedurl = oauthsign.sign_oauth_request(url).to_url()
-    try:
-      request = urllib2.urlopen(signedurl)
-    except urllib2.URLError:
-      print('Could not retrieve all tweets.')
-      return output
-    try:
-      decoded_response = json.loads(request.read())
-    except ValueError:
-      print('Bad data received.')
-      return output
-    output += decoded_response['statuses']
+    search_object = fetch_and_decode(baseurl + url)
+    output += search_object['statuses']
   return output
 
 def pretty_print_tweets(input):
